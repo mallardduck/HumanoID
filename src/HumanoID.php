@@ -74,6 +74,7 @@ class HumanoID implements HumanoIDInterface
         }
 
         $this->wordSetData = $wordSets;
+        // TODO: add more tests to cover various scenarios (wordset+cat array, no wordset, no cat, etc)
         // No categories specified, then "Autodetect" categories to use
         if (isset($wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX])) {
             $this->categories = $wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX];
@@ -86,6 +87,11 @@ class HumanoID implements HumanoIDInterface
                 'Using automatic category setting is deprecated, either set JSON category order config, or pass as an array'
             );
             $this->categories = array_keys($this->wordSetData);
+        }
+
+        // Drop the field used for wordset ordering
+        if (isset($wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX])) {
+            unset($wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX]);
         }
 
         // Check categories and build lookup table
@@ -103,11 +109,6 @@ class HumanoID implements HumanoIDInterface
                     $categoryName
                 );
                 throw new LookUpFailureException($message);
-            }
-
-            // Drop the field used for wordset ordering
-            if (isset($wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX])) {
-                unset($wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX]);
             }
 
             // Ensure unique and normalized values
