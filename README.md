@@ -45,7 +45,7 @@ We provide a `zooIdGenerator` and a `spaceIdGenerator` out-of-the box but it's e
 The `HumanoID` has a constructor with 4 arguments; all of which but the first are optional:
 
 - `$wordSets`: The words-structure ([see below](#word-lists-and-categories)) to use as 'dictionary'
-- `$categories` (*optional*, [see below](#word-lists-and-categories)): if you want to use a different order for categories than the default order (which is the order of the keys of the `$words` argument)
+- `$categories` (*semi-optional*, [see below](#word-lists-and-categories)): the order the categories from the dictionary are used; required unless your dictionary has a `_humanoID_cat_order` field configured
 - `$separator` (*optional*, [see below](#separator)): the separator, if any, to use
 - `$format` (*optional*, [see below](#formats)): the format to use
 
@@ -65,7 +65,13 @@ You can use custom word lists; you can store these anywhere you want like in a J
         'animals'    => ['cow', 'whale', 'monkey'],
     ]
 
-The `HumanoID` will automatically determine which 'categories' are available. In the above example generated HumanoIDs would take the form `adjective-color-animal`. Whenever this should turn out to be not enough, the `HumanoID` automatically repeats the first category as often as needed; so this would result in `adjective-adjective-color-animal` or even `adjective-adjective-adjective-color-animal` and so on. However, the order of the categories can be specified by passing an array of words to the `$categories` argument of the `HumanoID` class. You could, for example, pass `['colors', 'adjectives', 'animals']` which will result in HumanoIDs that take the form `color-adjective-animal` or, again, when this should not be enough: `color-color-color-adjective-animal`.
+The `HumanoID` will automatically determine which 'categories' are available. However, due to changes in the API, the automatic determination of category order has been deprecated and will return warnings. The new recommended approach is:
+
+1. Include a `_humanoID_cat_order` field on the wordset that provides the explicit order to use.
+2. Pass the same information as an array/list of words to the `$categories` parameter.
+
+For example, you could pass ['colors', 'adjectives', 'animals'] to specify the order of categories explicitly.
+And that will give the same results as the deprecated order determination code where generated HumanoIDs would take the form `adjective-color-animal`.
 
 Ofcourse you don't have to use adjectives, colors and animals. It can be anything you want. So, more generalized, you can provide any data structure in the form
 
@@ -74,7 +80,7 @@ Ofcourse you don't have to use adjectives, colors and animals. It can be anythin
         'category2' =>  ['value', 'value', 'value', ...],
         ...
     ]
-    
+
 ## Separator
 
 By default `HumanoID` uses the `-` character to separate words. This results in HumanoIDs like `big-red-whale`. You can specify any desired string as a separator; it helps if the separator string is not contained in any of the words. 
@@ -118,6 +124,7 @@ We won't go into too much detail, but in essence a tree is created on a per-char
 
 - **Don't** change your wordlist once you go into production. Imagine reassigning or reordering the value of the values `A..F` in the hexadecimal system. It will be very hard, if not impossible, to make this work correctly without resulting in incorrectly converted HumanoIDs to ID's or causing ambiguous results etc.
 - Use large word-lists. *Don't go overboard*, but categories with a handful of words don't help much (*unless* you don't mind either long HumanoIDs.(`red-blue-blue-red-red-blue-funky-monkey` for example) or have some more smaller categories).
+- When required, `HumanoID` will automatically duplicate the first category as needed. For instance, if more categories are needed than provided, the class will repeat the first category. However, users can specify the order of categories by passing an array of words to the $categories argument of the HumanoID class.
 - Whatever wordlist/separator/format you decide on, once you picked it, you're stuck with it (unless you want to break all your HumanoIDs or you'll need to do some (on-the-fly?) conversion.
 - When not using any separator, try to use longer, unique, words that are not contained in other words (so, for example, avoid "`old`, `cold`" or "`expensive`,`inexpensive`").
 - If ambiguous words without a separator are unavoidable or desired you could consider only using the `create(int $id)` method and storing the result alongside the `id` with your data. Apply a unique constraint and index if you can. That way you can use the field with the HumanoID value to do a lookup.

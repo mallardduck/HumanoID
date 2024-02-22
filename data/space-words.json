@@ -1,4 +1,12 @@
 {
+  "_humanoID_cat_order": [
+    "buzzwords",
+    "colors",
+    "life-cycle",
+    "star-taxonomy",
+    "planetoids",
+    "galaxies"
+  ],
   "buzzwords": [
     "Antimatter",
     "Aperture",

@@ -1,4 +1,9 @@
 {
+  "_humanoID_cat_order": [
+    "adjectives",
+    "colors",
+    "animals"
+  ],
   "adjectives": [
     "womanly",
     "fertile",

@@ -11,6 +11,8 @@ use RobThree\HumanoID\Obfuscatories\SymmetricObfuscatorInterface;
 
 class HumanoID implements HumanoIDInterface
 {
+    public const JSON_CATEGORY_ORDER_INDEX = "_humanoID_cat_order";
+
     /**
      * Key for lookup array to store a lookup result (index).
      * Also can, technically, be anything except any of the (lowercase) chars allowed in the HumanoIDs.
@@ -73,7 +75,18 @@ class HumanoID implements HumanoIDInterface
 
         $this->wordSetData = $wordSets;
         // No categories specified, then "Autodetect" categories to use
-        $this->categories = $categories ?? array_keys($this->wordSetData);
+        if (isset($wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX])) {
+            $this->categories = $wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX];
+        } elseif ($categories !== null) {
+            $this->categories = $categories;
+        } else {
+            trigger_deprecation(
+                "robthree/humanoid",
+                'TBD', // TODO: update for actual deprecation version
+                'Using automatic category setting is deprecated, either set JSON category order config, or pass as an array'
+            );
+            $this->categories = array_keys($this->wordSetData);
+        }
 
         // Check categories and build lookup table
         foreach (array_unique($this->categories) as $categoryName) {
@@ -90,6 +103,11 @@ class HumanoID implements HumanoIDInterface
                     $categoryName
                 );
                 throw new LookUpFailureException($message);
+            }
+
+            // Drop the field used for wordset ordering
+            if (isset($wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX])) {
+                unset($wordSets[HumanoID::JSON_CATEGORY_ORDER_INDEX]);
             }
 
             // Ensure unique and normalized values
